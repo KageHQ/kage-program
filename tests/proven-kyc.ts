@@ -2,25 +2,18 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
-import * as path from "path";
 import { groth16 } from "snarkjs";
+import { wasmPath as WASM_PATH, zkeyPath as ZKEY_PATH } from "@kagehq/circuits";
 import { ProvenKyc } from "../target/types/proven_kyc";
 import { to32, formatProof } from "./proof-format";
 
 // circuits/test/helpers.js is a CommonJS module.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { buildInput } = require("../../circuits/test/helpers");
+const { buildInput } = require("./helpers");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { DEMO_ISSUER_PRIV } = require("@kagehq/shared");
 
-const WASM_PATH = path.join(
-  __dirname,
-  "../../circuits/build/age_kyc_js/age_kyc.wasm"
-);
-const ZKEY_PATH = path.join(__dirname, "../../circuits/build/age_kyc.zkey");
-
-const ISSUER_PRIV_KEY = Buffer.from(
-  "0001020304050607080900010203040506070809000102030405060708090001",
-  "hex"
-);
+const ISSUER_PRIV_KEY = Buffer.from(DEMO_ISSUER_PRIV, "hex");
 
 describe("proven-kyc", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
