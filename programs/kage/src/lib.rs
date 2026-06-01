@@ -40,15 +40,22 @@ pub mod kage {
     ///   - b = proof[64..192] G2, imaginary coord first then real
     ///   - c = proof[192..256] G1
     ///
-    /// `public_inputs` (6 entries, IC order):
-    ///   [0] Ax, [1] Ay, [2] currentDateInt, [3] currentYY, [4] minAge, [5] nullifierHash
+    /// `public_inputs` (7 entries, IC order):
+    ///   [0] Ax, [1] Ay, [2] currentDateInt, [3] currentYY, [4] minAge,
+    ///   [5] nullifierHash, [6] scope (per-event binding)
+    ///
+    /// `scope` is the eventId this verifier gate accepts. It must equal
+    /// public_inputs[6], so a proof minted for another event is rejected here
+    /// even though it is cryptographically valid. The nullifier is itself scoped
+    /// (Poseidon(secret, scope)), so one identity verifies once PER event.
     pub fn verify(
         ctx: Context<Verify>,
         proof: [u8; 256],
         public_inputs: Vec<[u8; 32]>,
         nullifier_hash: [u8; 32],
+        scope: [u8; 32],
     ) -> Result<()> {
-        require!(public_inputs.len() == 6, KycError::BadPublicInputs);
+        require!(public_inputs.len() == 7, KycError::BadPublicInputs);
 
         // Only proofs signed by the trusted issuer are accepted.
         require!(public_inputs[0] == TRUSTED_AX, KycError::UntrustedIssuer);
@@ -61,17 +68,21 @@ pub mod kage {
             KycError::BadPublicInputs
         );
 
+        // Bind the transaction to this gate's event: the proof's scope
+        // (public_inputs[6]) must match the scope this verifier declares.
+        require!(scope == public_inputs[6], KycError::ScopeMismatch);
+
         let proof_a: [u8; 64] = proof[0..64].try_into().unwrap();
         let proof_b: [u8; 128] = proof[64..192].try_into().unwrap();
         let proof_c: [u8; 64] = proof[192..256].try_into().unwrap();
 
-        let inputs: [[u8; 32]; 6] = public_inputs
+        let inputs: [[u8; 32]; 7] = public_inputs
             .clone()
             .try_into()
             .map_err(|_| error!(KycError::BadPublicInputs))?;
 
         let mut verifier =
-            Groth16Verifier::<6>::new(&proof_a, &proof_b, &proof_c, &inputs, &VERIFYINGKEY)
+            Groth16Verifier::<7>::new(&proof_a, &proof_b, &proof_c, &inputs, &VERIFYINGKEY)
                 .map_err(|_| error!(KycError::VerificationFailed))?;
         verifier
             .verify()
@@ -129,10 +140,12 @@ pub struct Verified {
 
 #[error_code]
 pub enum KycError {
-    #[msg("public_inputs must have exactly 6 entries")]
+    #[msg("public_inputs must have exactly 7 entries")]
     BadPublicInputs,
     #[msg("issuer pubkey is not the trusted issuer")]
     UntrustedIssuer,
+    #[msg("proof scope does not match this verifier's event")]
+    ScopeMismatch,
     #[msg("groth16 proof verification failed")]
     VerificationFailed,
 }
