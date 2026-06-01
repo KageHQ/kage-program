@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-proven_kyc = "A6JUWyUESgJWF6w2bZRBnXTG5ZTmKU2HqWjEXSVHK1vS"
+kage = "2X4ts1PwG6jRUjsU6DCqgcHuLhnLFpJS8HNCjuMLqP5C"
 
 [registry]
 url = "https://api.apr.dev"
@@ -16,4 +16,4 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "pnpm exec ts-mocha -p ./tsconfig.json -t 1000000 \"tests/**/*.ts\""
+test = "pnpm exec ts-mocha -p ./tsconfig.json -t 1000000 --exit \"tests/**/*.ts\""

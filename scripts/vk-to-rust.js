@@ -22,7 +22,7 @@
  *
  * Usage:
  *   node scripts/vk-to-rust.js node_modules/@kagehq/circuits/build/verification_key.json \
- *     > programs/proven-kyc/src/verifying_key.rs
+ *     > programs/kage/src/verifying_key.rs
  */
 
 const fs = require("fs");

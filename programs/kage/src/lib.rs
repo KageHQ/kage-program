@@ -4,7 +4,7 @@ use groth16_solana::groth16::Groth16Verifier;
 mod verifying_key;
 use verifying_key::VERIFYINGKEY;
 
-declare_id!("A6JUWyUESgJWF6w2bZRBnXTG5ZTmKU2HqWjEXSVHK1vS");
+declare_id!("2X4ts1PwG6jRUjsU6DCqgcHuLhnLFpJS8HNCjuMLqP5C");
 
 /// Trusted issuer EdDSA pubkey (BN254 base field, big-endian 32 bytes each).
 /// Corresponds to the fixed demo issuer private key
@@ -21,7 +21,7 @@ const TRUSTED_AY: [u8; 32] = [
 ];
 
 #[program]
-pub mod proven_kyc {
+pub mod kage {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {

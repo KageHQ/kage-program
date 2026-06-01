@@ -4,7 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
 import { groth16 } from "snarkjs";
 import { wasmPath as WASM_PATH, zkeyPath as ZKEY_PATH } from "@kagehq/circuits";
-import { ProvenKyc } from "../target/types/proven_kyc";
+import { Kage } from "../target/types/kage";
 import { to32, formatProof } from "./proof-format";
 
 // circuits/test/helpers.js is a CommonJS module.
@@ -15,9 +15,9 @@ const { DEMO_ISSUER_PRIV } = require("@kagehq/shared");
 
 const ISSUER_PRIV_KEY = Buffer.from(DEMO_ISSUER_PRIV, "hex");
 
-describe("proven-kyc", () => {
+describe("kage", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
-  const program = anchor.workspace.provenKyc as Program<ProvenKyc>;
+  const program = anchor.workspace.kage as Program<Kage>;
   const provider = anchor.getProvider() as anchor.AnchorProvider;
 
   // Shared across tests: a single real proof reused to test replay rejection.

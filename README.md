@@ -134,9 +134,9 @@ The test suite generates a real Groth16 proof using `@kagehq/circuits` (snarkjs 
 The verifying key comes from @kagehq/circuits:
 
     node scripts/vk-to-rust.js node_modules/@kagehq/circuits/build/verification_key.json \
-      > programs/proven-kyc/src/verifying_key.rs
+      > programs/kage/src/verifying_key.rs
 
-TRUSTED_AX / TRUSTED_AY in programs/proven-kyc/src/lib.rs are the EdDSA public key
+TRUSTED_AX / TRUSTED_AY in programs/kage/src/lib.rs are the EdDSA public key
 of the demo issuer (@kagehq/shared DEMO_ISSUER_PRIV), NOT part of the trusted
 setup. If that key changes, recompute AX/AY or verification fails with
 UntrustedIssuer.
@@ -167,7 +167,7 @@ This publishes `@kagehq/program-idl` to `https://npm.pkg.github.com`.
 - [ ] pnpm install
 - [ ] REGENERATE verifying_key.rs from @kagehq/circuits (the committed vk is from the
       OLD trusted setup and will REJECT proofs made with the new @kagehq/circuits zkey):
-      node scripts/vk-to-rust.js node_modules/@kagehq/circuits/build/verification_key.json > programs/proven-kyc/src/verifying_key.rs
+      node scripts/vk-to-rust.js node_modules/@kagehq/circuits/build/verification_key.json > programs/kage/src/verifying_key.rs
 - [ ] anchor test --skip-local-validator (against surfpool) — confirm proof verifies + replay rejected
 - [ ] node scripts/pack-idl.js && (cd idl-pkg && cp ../.npmrc .npmrc && npm publish)  -> @kagehq/program-idl@1.0.0
 

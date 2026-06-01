@@ -7,9 +7,9 @@ addon "svm" {
     network_id = input.network_id
 }
 
-action "deploy_proven_kyc" "svm::deploy_program" {
-    description = "Deploy proven_kyc program"
-    program = svm::get_program_from_anchor_project("proven_kyc") 
+action "deploy_kage" "svm::deploy_program" {
+    description = "Deploy kage program"
+    program = svm::get_program_from_anchor_project("kage") 
     authority = signer.authority
     payer = signer.payer
     // Optional: if you want to deploy the program via a cheatcode when targeting a Surfnet, set `instant_surfnet_deployment = true`
