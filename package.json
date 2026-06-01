@@ -5,7 +5,10 @@
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.32.1"
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/web3.js": "^1.98.0",
+    "circomlibjs": "^0.1.7",
+    "snarkjs": "^0.7.4"
   },
   "devDependencies": {
     "chai": "^4.3.4",

@@ -46,8 +46,44 @@ function toBytes(dec) {
   return out;
 }
 
-// G1 affine point: x(32) || y(32). snarkjs stores [x, y, z=1]; we drop z.
-const g1 = (p) => [...toBytes(p[0]), ...toBytes(p[1])];
+// BN254 base field prime.
+const FIELD_P =
+  21888242871839275222246405745257275088696311157297823662689037894645226208583n;
+
+// Modular inverse (extended Euclid) for projective -> affine conversion.
+function modInv(a, m) {
+  let [old_r, r] = [((a % m) + m) % m, m];
+  let [old_s, s] = [1n, 0n];
+  while (r !== 0n) {
+    const q = old_r / r;
+    [old_r, r] = [r, old_r - q * r];
+    [old_s, s] = [s, old_s - q * s];
+  }
+  return ((old_s % m) + m) % m;
+}
+
+// G1 point -> affine x(32) || y(32). snarkjs stores projective [x, y, z].
+// The on-chain alt_bn128 syscalls expect AFFINE coordinates, with the point at
+// infinity (z == 0) encoded as (0, 0) — NOT the raw projective (x, y). An
+// insecure/dummy trusted setup can yield infinity IC points ([0,1,0]); encoding
+// those as (0,1) is off-curve and makes alt_bn128_multiplication fail
+// (PreparingInputsG1MulFailed). Normalise z here so any valid VK works.
+const g1 = (p) => {
+  const x = BigInt(p[0]);
+  const y = BigInt(p[1]);
+  const z = p[2] !== undefined ? BigInt(p[2]) : 1n;
+  if (z === 0n) {
+    // Point at infinity -> 64 zero bytes (alt_bn128 affine encoding of identity).
+    return new Array(64).fill(0);
+  }
+  if (z === 1n) {
+    return [...toBytes(x), ...toBytes(y)];
+  }
+  const zInv = modInv(z, FIELD_P);
+  const ax = (x * zInv) % FIELD_P;
+  const ay = (y * zInv) % FIELD_P;
+  return [...toBytes(ax), ...toBytes(ay)];
+};
 
 // G2 affine point. snarkjs stores [[x.c0, x.c1], [y.c0, y.c1], [1, 0]] (real, imag).
 // groth16-solana wants imaginary first then real: x.c1 || x.c0 || y.c1 || y.c0.
