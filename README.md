@@ -1,4 +1,11 @@
-# kage-program
+<h1 align="center">kage-program</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Solana-000?style=flat-square&logo=solana&logoColor=14F195" alt="Solana">
+  <img src="https://img.shields.io/badge/Anchor-512BD4?style=flat-square" alt="Anchor">
+  <img src="https://img.shields.io/badge/Groth16-2D7FF9?style=flat-square" alt="Groth16">
+  <img src="https://img.shields.io/badge/Zero--Knowledge-6E56CF?style=flat-square" alt="Zero-Knowledge">
+</p>
 
 On-chain Groth16 verifier + sybil-resistant nullifier PDA for the [Kage](https://github.com/KageHQ) zero-knowledge e-KYC demo on Solana.
 
