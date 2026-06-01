@@ -1,12 +1,12 @@
 # kage-program
 
-On-chain Groth16 verifier + sybil-resistant nullifier PDA for the [proven-kyc](https://github.com/KageHQ) zero-knowledge e-KYC demo on Solana.
+On-chain Groth16 verifier + sybil-resistant nullifier PDA for the [Kage](https://github.com/KageHQ) zero-knowledge e-KYC demo on Solana.
 
 This is the Solana Anchor program that proves a valid Indonesian KTP + age >= 18 **without revealing** NIK, name, or date-of-birth. It verifies the Groth16 proof, enforces a trusted-issuer check, and mints a one-time nullifier PDA so the same identity cannot pass twice. The verifier learns only `pass` + a sybil-resistant nullifier.
 
 ## Role in the system
 
-`kage-program` is the final, trustless step in the proven-kyc flow:
+`kage-program` is the final, trustless step in the Kage flow:
 
 ```
 Mobile (PII, on-device proof generation)
@@ -150,12 +150,12 @@ The verifying key embedded in the program comes from `@kagehq/circuits`:
 
 ```sh
 node scripts/vk-to-rust.js node_modules/@kagehq/circuits/build/verification_key.json \
-  > programs/proven-kyc/src/verifying_key.rs
+  > programs/kage/src/verifying_key.rs
 ```
 
 > **Required before testing:** the committed `verifying_key.rs` is from the **old** trusted setup and will **REJECT** proofs generated with the current `@kagehq/circuits` zkey. Run the command above to regenerate it against the current circuit, then `anchor test --skip-local-validator` should confirm the proof verifies and the replay is rejected.
 
-`TRUSTED_AX` / `TRUSTED_AY` in `programs/proven-kyc/src/lib.rs` are the EdDSA public key of the demo issuer (`@kagehq/shared` `DEMO_ISSUER_PRIV`), **not** part of the trusted setup. If that key changes, recompute `AX`/`AY` or verification fails with `UntrustedIssuer`.
+`TRUSTED_AX` / `TRUSTED_AY` in `programs/kage/src/lib.rs` are the EdDSA public key of the demo issuer (`@kagehq/shared` `DEMO_ISSUER_PRIV`), **not** part of the trusted setup. If that key changes, recompute `AX`/`AY` or verification fails with `UntrustedIssuer`.
 
 ## Publishing the IDL (`@kagehq/program-idl`)
 
