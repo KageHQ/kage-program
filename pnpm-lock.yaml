@@ -4,10 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@kagehq/circuits': link:../kage-circuits
-  '@kagehq/shared': link:../kage-shared
-
 importers:
 
   .:
@@ -16,11 +12,11 @@ importers:
         specifier: ^0.32.1
         version: 0.32.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
       '@kagehq/circuits':
-        specifier: link:../kage-circuits
-        version: link:../kage-circuits
+        specifier: ^1.1.0
+        version: 1.1.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@kagehq/shared':
-        specifier: link:../kage-shared
-        version: link:../kage-shared
+        specifier: ^1.0.0
+        version: 1.0.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@solana/web3.js':
         specifier: ^1.98.0
         version: 1.98.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
@@ -171,6 +167,12 @@ packages:
 
   '@iden3/binfileutils@0.0.12':
     resolution: {integrity: sha512-naAmzuDufRIcoNfQ1d99d7hGHufLA3wZSibtr4dMe6ZeiOPV1KwOZWTJ1YVz4HbaWlpDuzVU72dS4ATQS4PXBQ==}
+
+  '@kagehq/circuits@1.1.0':
+    resolution: {integrity: sha512-Wvr0pf1U8U+3+f+s/B4est1IV3qR4FnhDIsC2/0wYO2XP6qeS1mY3C9nyM4nhqHmZIo8l4TwounNpEI2m+iuZA==, tarball: https://npm.pkg.github.com/download/@kagehq/circuits/1.1.0/6e20fe31f3f58995afb0e488d5c2ba117300c4f8}
+
+  '@kagehq/shared@1.0.0':
+    resolution: {integrity: sha512-wYqs2crFSUDHk9XJfjHP2jm2XrZev/0k6GZi+tPud0hdBbfOOnkXzieyyGnQNs6DIB72uCy1ttW4gzEJgB1dwg==, tarball: https://npm.pkg.github.com/download/@kagehq/shared/1.0.0/e63f29d1fddf89777fa5d1a247c519885bed0afc}
 
   '@noble/curves@1.9.7':
     resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
@@ -1308,6 +1310,22 @@ snapshots:
     dependencies:
       fastfile: 0.0.20
       ffjavascript: 0.3.1
+
+  '@kagehq/circuits@1.1.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+    dependencies:
+      '@kagehq/shared': 1.0.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+    transitivePeerDependencies:
+      - bufferutil
+      - react-native-b4a
+      - utf-8-validate
+
+  '@kagehq/shared@1.0.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+    dependencies:
+      circomlibjs: 0.1.7(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+    transitivePeerDependencies:
+      - bufferutil
+      - react-native-b4a
+      - utf-8-validate
 
   '@noble/curves@1.9.7':
     dependencies:
