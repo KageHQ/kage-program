@@ -2,7 +2,10 @@ const { buildEddsa, buildPoseidon } = require("circomlibjs");
 
 // Build a full circuit input object from a NIK string + name + secret.
 // Returns { input, eddsa, poseidon } where input is ready for the witness.
-async function buildInput({ nik, name, secret, currentDateInt, currentYY, minAge, issuerPrivKey }) {
+//
+// v1.1.0: scoped. nullifier = Poseidon(secret, scope); `scope` is the 7th
+// public signal. Kept in sync with kage-circuits/test/helpers.js.
+async function buildInput({ nik, name, secret, scope = 0, currentDateInt, currentYY, minAge, issuerPrivKey }) {
   const eddsa = await buildEddsa();
   const poseidon = await buildPoseidon();
   const F = poseidon.F;
@@ -16,7 +19,7 @@ async function buildInput({ nik, name, secret, currentDateInt, currentYY, minAge
   const msg = poseidon([nikField, BigInt(name), BigInt(secret)]);
   const signature = eddsa.signPoseidon(issuerPrivKey, msg);
   const pubKey = eddsa.prv2pub(issuerPrivKey);
-  const nullifier = poseidon([BigInt(secret)]);
+  const nullifier = poseidon([BigInt(secret), BigInt(scope)]);
 
   const input = {
     nik: nikDigits.map((d) => d.toString()),
@@ -31,6 +34,7 @@ async function buildInput({ nik, name, secret, currentDateInt, currentYY, minAge
     currentYY: currentYY.toString(),
     minAge: minAge.toString(),
     nullifierHash: F.toObject(nullifier).toString(),
+    scope: BigInt(scope).toString(),
   };
   return { input, eddsa, poseidon };
 }

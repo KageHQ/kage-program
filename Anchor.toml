@@ -5,14 +5,17 @@ package_manager = "pnpm"
 resolution = true
 skip-lint = false
 
+[programs.devnet]
+kage = "LpL3vjhjoHBgJDEkKaDruSX7XRjQ8DvGLiq3meu3YJy"
+
 [programs.localnet]
-kage = "2X4ts1PwG6jRUjsU6DCqgcHuLhnLFpJS8HNCjuMLqP5C"
+kage = "LpL3vjhjoHBgJDEkKaDruSX7XRjQ8DvGLiq3meu3YJy"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

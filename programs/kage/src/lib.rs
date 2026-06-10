@@ -4,7 +4,7 @@ use groth16_solana::groth16::Groth16Verifier;
 mod verifying_key;
 use verifying_key::VERIFYINGKEY;
 
-declare_id!("2X4ts1PwG6jRUjsU6DCqgcHuLhnLFpJS8HNCjuMLqP5C");
+declare_id!("LpL3vjhjoHBgJDEkKaDruSX7XRjQ8DvGLiq3meu3YJy");
 
 /// Trusted issuer EdDSA pubkey (BN254 base field, big-endian 32 bytes each).
 /// Corresponds to the fixed demo issuer private key
@@ -19,6 +19,41 @@ const TRUSTED_AY: [u8; 32] = [
     30, 29, 232, 169, 8, 130, 108, 63, 154, 194, 224, 206, 238, 146, 158, 205, 12, 175, 59, 153,
     179, 239, 36, 82, 58, 170, 183, 150, 166, 247, 51, 196,
 ];
+
+/// Age threshold this gate enforces. The circuit proves age >= minAge for
+/// whatever minAge the prover supplied as a public input; without this check a
+/// proof generated with minAge = 0 would pass. The program therefore pins the
+/// accepted minAge value.
+const REQUIRED_MIN_AGE: u64 = 18;
+
+/// Maximum allowed distance (in days) between the proof's committed
+/// currentDateInt and the validator's clock. The circuit checks the age
+/// predicate against a prover-committed date, so the program must anchor that
+/// date to real time or a prover could commit a future date and pass the age
+/// check early. One day of slack absorbs timezone offset (proofs are built in
+/// local time, the validator clock is UTC).
+const MAX_DATE_SKEW_DAYS: i64 = 1;
+
+/// Interpret a 32-byte big-endian field element as a u64, rejecting values
+/// that do not fit (the top 24 bytes must be zero).
+fn be32_to_u64(b: &[u8; 32]) -> Option<u64> {
+    if b[..24].iter().any(|&x| x != 0) {
+        return None;
+    }
+    Some(u64::from_be_bytes(b[24..32].try_into().unwrap()))
+}
+
+/// Days since 1970-01-01 for a proleptic-Gregorian civil date
+/// (Howard Hinnant's days_from_civil algorithm).
+fn days_from_civil(y: i64, m: i64, d: i64) -> i64 {
+    let y = if m <= 2 { y - 1 } else { y };
+    let era = if y >= 0 { y } else { y - 399 } / 400;
+    let yoe = y - era * 400;
+    let mp = (m + 9) % 12;
+    let doy = (153 * mp + 2) / 5 + d - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    era * 146097 + doe - 719468
+}
 
 #[program]
 pub mod kage {
@@ -60,6 +95,36 @@ pub mod kage {
         // Only proofs signed by the trusted issuer are accepted.
         require!(public_inputs[0] == TRUSTED_AX, KycError::UntrustedIssuer);
         require!(public_inputs[1] == TRUSTED_AY, KycError::UntrustedIssuer);
+
+        // The age threshold is a public input chosen at proof time; the gate
+        // only accepts proofs generated against its required threshold.
+        let min_age =
+            be32_to_u64(&public_inputs[4]).ok_or(error!(KycError::BadPublicInputs))?;
+        require!(min_age == REQUIRED_MIN_AGE, KycError::MinAgeMismatch);
+
+        // Anchor the prover-committed date (public input 2, YYYYMMDD) to the
+        // validator clock. Without this, a proof committed to a future date
+        // would satisfy the circuit's age predicate prematurely.
+        let date_int =
+            be32_to_u64(&public_inputs[2]).ok_or(error!(KycError::BadPublicInputs))?;
+        let (year, month, day) = (date_int / 10_000, (date_int / 100) % 100, date_int % 100);
+        require!(
+            (1..=12).contains(&month) && (1..=31).contains(&day) && year >= 1970,
+            KycError::BadPublicInputs
+        );
+        // The circuit's century selection compares the NIK's two-digit year
+        // against currentYY (public input 3); it must be consistent with the
+        // committed date or the century logic can be steered independently.
+        let current_yy =
+            be32_to_u64(&public_inputs[3]).ok_or(error!(KycError::BadPublicInputs))?;
+        require!(current_yy == year % 100, KycError::BadPublicInputs);
+
+        let proof_days = days_from_civil(year as i64, month as i64, day as i64);
+        let now_days = Clock::get()?.unix_timestamp.div_euclid(86_400);
+        require!(
+            (proof_days - now_days).abs() <= MAX_DATE_SKEW_DAYS,
+            KycError::StaleProofDate
+        );
 
         // The nullifier seed must equal public_inputs[5] (nullifierHash). This
         // binds the one-time nullifier PDA to the proof's actual nullifier.
@@ -146,6 +211,10 @@ pub enum KycError {
     UntrustedIssuer,
     #[msg("proof scope does not match this verifier's event")]
     ScopeMismatch,
+    #[msg("proof minAge does not match this gate's required age threshold")]
+    MinAgeMismatch,
+    #[msg("proof's committed date is too far from the on-chain clock")]
+    StaleProofDate,
     #[msg("groth16 proof verification failed")]
     VerificationFailed,
 }
